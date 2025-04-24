@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Games | Siddharth's Site</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <style>
+    .game-btn {
+      @apply bg-indigo-600 text-white px-4 py-2 m-2 rounded hover:bg-indigo-700 transition;
+    }
+    .board-cell {
+      width: 60px;
+      height: 60px;
+      border: 2px solid #4f46e5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .card {
+      width: 80px;
+      height: 80px;
+      background: #c7d2fe;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.4s ease;
+    }
+    .card.flipped {
+      background: #6366f1;
+      color: white;
+    }
+  </style>
+</head>
+<body class="bg-white text-gray-800">
+
+  <nav class="bg-indigo-600 text-white px-6 py-4 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold">Siddharth's Site</h1>
+      <ul class="flex space-x-4">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="learn.html">Learn</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="games.html" class="underline">Games</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="px-6 py-12 max-w-5xl mx-auto space-y-24">
+
+    <!-- Rock Paper Scissors -->
+    <section class="text-center">
+      <h2 class="text-3xl font-bold text-indigo-700 mb-4 animate__animated animate__fadeInDown">✊✋✌️ Rock Paper Scissors</h2>
+      <div>
+        <button onclick="play('rock')" class="game-btn">Rock</button>
+        <button onclick="play('paper')" class="game-btn">Paper</button>
+        <button onclick="play('scissors')" class="game-btn">Scissors</button>
+      </div>
+      <div id="rps-result" class="mt-4 text-xl font-semibold"></div>
+    </section>
+
+    <!-- Tic Tac Toe -->
+    <section class="text-center">
+      <h2 class="text-3xl font-bold text-indigo-700 mb-4 animate__animated animate__fadeInLeft">❌⭕ Tic-Tac-Toe</h2>
+      <div id="board" class="grid grid-cols-3 gap-1 justify-center max-w-xs mx-auto"></div>
+      <p id="ttt-status" class="mt-4 text-lg font-medium"></p>
+      <button onclick="restartGame()" class="mt-4 game-btn">Restart Game</button>
+    </section>
+
+    <!-- Memory Game -->
+    <section class="text-center">
+      <h2 class="text-3xl font-bold text-indigo-700 mb-4 animate__animated animate__fadeInRight">🧠 Memory Flip Game</h2>
+      <div id="memory-board" class="grid grid-cols-4 gap-4 justify-center max-w-md mx-auto"></div>
+      <button onclick="resetMemoryGame()" class="mt-4 game-btn">Restart Memory</button>
+    </section>
+
+    <!-- Quiz Game -->
+    <section class="text-center">
+      <h2 class="text-3xl font-bold text-indigo-700 mb-4 animate__animated animate__zoomIn">📚 Quiz Game</h2>
+      <div class="bg-gray-100 p-6 rounded shadow-lg max-w-lg mx-auto">
+        <p id="question" class="text-xl font-medium mb-4"></p>
+        <div id="choices" class="space-y-2"></div>
+        <p id="quiz-feedback" class="mt-4 font-semibold text-green-600"></p>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // RPS Game
+    function play(userChoice) {
+      const choices = ['rock', 'paper', 'scissors'];
+      const computerChoice = choices[Math.floor(Math.random() * 3)];
+      let result = '';
+
+      if (userChoice === computerChoice) {
+        result = "It's a tie!";
+      } else if (
+        (userChoice === 'rock' && computerChoice === 'scissors') ||
+        (userChoice === 'paper' && computerChoice === 'rock') ||
+        (userChoice === 'scissors' && computerChoice === 'paper')
+      ) {
+        result = `You win! ${userChoice} beats ${computerChoice}`;
+      } else {
+        result = `You lose! ${computerChoice} beats ${userChoice}`;
+      }
+
+      document.getElementById('rps-result').innerText = result;
+    }
+
+    // Tic-Tac-Toe Game
+    let board = Array(9).fill('');
+    let currentPlayer = 'X';
+    const status = document.getElementById('ttt-status');
+    const boardDiv = document.getElementById('board');
+
+    function checkWinner() {
+      const winPatterns = [
+        [0,1,2], [3,4,5], [6,7,8],
+        [0,3,6], [1,4,7], [2,5,8],
+        [0,4,8], [2,4,6]
+      ];
+      for (let pattern of winPatterns) {
+        const [a, b, c] = pattern;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          return board[a];
+        }
+      }
+      return board.includes('') ? null : 'Draw';
+    }
+
+    function makeMove(i) {
+      if (board[i] || checkWinner()) return;
+      board[i] = currentPlayer;
+      renderBoard();
+      const winner = checkWinner();
+      if (winner) {
+        status.innerText = winner === 'Draw' ? "It's a draw!" : `${winner} wins!`;
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      }
+    }
+
+    function renderBoard() {
+      boardDiv.innerHTML = '';
+      board.forEach((cell, i) => {
+        const div = document.createElement('div');
+        div.className = 'board-cell';
+        div.innerText = cell;
+        div.onclick = () => makeMove(i);
+        boardDiv.appendChild(div);
+      });
+    }
+
+    function restartGame() {
+      board = Array(9).fill('');
+      currentPlayer = 'X';
+      status.innerText = '';
+      renderBoard();
+    }
+
+    renderBoard();
+
+    // Memory Flip Game
+    let memoryCards = ['🍎','🍌','🍒','🍇','🍎','🍌','🍒','🍇'];
+    let flipped = [], matched = [];
+    const memoryBoard = document.getElementById('memory-board');
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i+1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function resetMemoryGame() {
+      memoryCards = shuffle([...memoryCards]);
+      flipped = [];
+      matched = [];
+      drawMemoryBoard();
+    }
+
+    function drawMemoryBoard() {
+      memoryBoard.innerHTML = '';
+      memoryCards.forEach((val, i) => {
+        const card = document.createElement('div');
+        card.className = 'card ' + (flipped.includes(i) || matched.includes(i) ? 'flipped' : '');
+        card.innerText = flipped.includes(i) || matched.includes(i) ? val : '?';
+        card.onclick = () => flipCard(i);
+        memoryBoard.appendChild(card);
+      });
+    }
+
+    function flipCard(index) {
+      if (flipped.length === 2 || flipped.includes(index) || matched.includes(index)) return;
+      flipped.push(index);
+      drawMemoryBoard();
+      if (flipped.length === 2) {
+        const [a, b] = flipped;
+        if (memoryCards[a] === memoryCards[b]) {
+          matched.push(a, b);
+        }
+        setTimeout(() => { flipped = []; drawMemoryBoard(); }, 1000);
+      }
+    }
+
+    drawMemoryBoard();
+
+    // Quiz Game
+    const quizQuestions = [
+      {
+        question: "What is 2 + 2?",
+        choices: ["3", "4", "5"],
+        correct: "4"
+      },
+      {
+        question: "What is the capital of France?",
+        choices: ["London", "Berlin", "Paris"],
+        correct: "Paris"
+      }
+    ];
+
+    let currentQuestion = 0;
+    const questionDiv = document.getElementById('question');
+    const choicesDiv = document.getElementById('choices');
+    const feedbackDiv = document.getElementById('quiz-feedback');
+
+    function loadQuestion() {
+      const q = quizQuestions[currentQuestion];
+      questionDiv.innerText = q.question;
+      choicesDiv.innerHTML = '';
+      q.choices.forEach(choice => {
+        const button = document.createElement('button');
+        button.innerText = choice;
+        button.onclick = () => checkAnswer(choice);
+        button.className = "game-btn";
+        choicesDiv.appendChild(button);
+      });
+    }
+
+    function checkAnswer(choice) {
+      const q = quizQuestions[currentQuestion];
+      if (choice === q.correct) {
+        feedbackDiv.innerText = "Correct!";
+      } else {
+        feedbackDiv.innerText = "Wrong Answer!";
+      }
+      setTimeout(() => {
+        currentQuestion++;
+        if (currentQuestion < quizQuestions.length) {
+          loadQuestion();
+        } else {
+          feedbackDiv.innerText = "Quiz Finished!";
+        }
+      }, 1000);
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
